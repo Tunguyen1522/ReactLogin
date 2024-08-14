@@ -1,41 +1,45 @@
 ﻿.App {
     text-align: center;
-  }
-  
-  nav {
+    height: 100vh; 
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; 
+}
+
+nav {
     margin: 20px;
-  }
-  
-  form {
-    max-width: 400px;
+}
+
+form {
+    max-width: 500px;
     margin: 0 auto;
-    text-align: left;
-  }
-  
-  div {
+    text-align: center;
+}
+
+div {
     margin-bottom: 10px;
-  }
-  
-  label {
+}
+
+label {
     display: block;
     margin-bottom: 5px;
-  }
-  
-  input {
+}
+
+input {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
-  }
-  
-  button {
+}
+
+button {
     padding: 10px 20px;
     border: none;
     background-color: #007bff;
     color: white;
     cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
+    border-radius: 5px;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }

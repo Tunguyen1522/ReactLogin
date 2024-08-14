@@ -1,17 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using ReactApp1.Data;
 using System.Text;
-using Microsoft.IdentityModel.JsonWebTokens;
-using System.Configuration;
+using ReactApp1.Data;
 using ReactApp1.Server.Models;
-
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers
 {
@@ -21,6 +17,7 @@ namespace WebApi.Controllers
     {
         private readonly AppDbContext dbContext;
         private readonly IConfiguration configuration;
+
         public UsersController(AppDbContext dbContext, IConfiguration configuration)
         {
             this.dbContext = dbContext;
@@ -29,30 +26,35 @@ namespace WebApi.Controllers
 
         [HttpPost]
         [Route("Registration")]
-        public IActionResult Registration(UserDTO userDTO)
+        public async Task<IActionResult> Registration(UserDTO userDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var objUser = dbContext.Users.FirstOrDefault(x => x.Email == userDTO.Email);
-            if (objUser == null)
+            // Kiểm tra tính duy nhất của Username và Email
+            var existingUser = await dbContext.Users
+                .FirstOrDefaultAsync(x => x.Email == userDTO.Email || x.UserName == userDTO.UserName);
+            
+            if (existingUser != null)
             {
-                dbContext.Users.Add(new User
-                {
-                    UserName = userDTO.UserName,
-                    Email = userDTO.Email,
-                    PasswordHash = userDTO.PasswordHash
-                });
-                dbContext.SaveChanges();
-                return Ok("User registered successfully");
+                return BadRequest("User already exists with the same email or username.");
             }
-            else
+
+            var newUser = new User
             {
-                return BadRequest("User already exists with the same email address.");
-            }
+                UserName = userDTO.UserName,
+                Email = userDTO.Email,
+                PasswordHash = userDTO.PasswordHash
+            };
+
+            dbContext.Users.Add(newUser);
+            await dbContext.SaveChangesAsync();
+
+            return Ok("User registered successfully");
         }
+
         private bool IsValidEmail(string email)
         {
             try
@@ -66,7 +68,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("Login")]
         public IActionResult Login(LoginDTO loginDTO)
@@ -76,43 +77,75 @@ namespace WebApi.Controllers
             {
                 var claims = new[]
                 {
-                    new Claim(Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"]),
-                    new Claim(Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"]),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim("Id", user.Id.ToString()),
-                    new Claim("Email", user.Email.ToString())
+                    new Claim("Email", user.Email)
                 };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
                 var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var token = new JwtSecurityToken(configuration["Jwt:Issuer"],
-                    configuration["Jwt:Audience"], claims, expires: DateTime.UtcNow.AddMinutes(60),
+                var token = new JwtSecurityToken(
+                    configuration["Jwt:Issuer"],
+                    configuration["Jwt:Audience"], 
+                    claims, 
+                    expires: DateTime.UtcNow.AddMinutes(60),
                     signingCredentials: signIn
-                    );
-                string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
-                return Ok(user);
-            }
-            return NoContent();
+                );
 
+                var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+                return Ok(new { token = tokenValue });
+            }
+
+            return BadRequest("Invalid username or password.");
         }
 
         [HttpGet]
         [Route("GetUsers")]
-
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            return Ok(dbContext.Users.ToList());
+            var users = await dbContext.Users.ToListAsync();
+            return Ok(users);
         }
 
         [HttpGet]
         [Route("GetUser")]
-        public IActionResult GetUser(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
-            var user = dbContext.Users.FirstOrDefault(x => x.Id == id);
-            if (User != null)
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user != null)
                 return Ok(user);
             else
                 return NoContent();
         }
 
+        [HttpGet]
+        [Route("CurrentUser")]
+        [Authorize]
+        public IActionResult GetCurrentUser()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                var user = dbContext.Users.FirstOrDefault(u => u.Id == userId);
+                if (user != null)
+                    return Ok(user);
+            }
+
+            return Unauthorized();
+        }
+    }
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class SecureController : ControllerBase
+    {
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetSecureData()
+        {
+            return Ok("This is a secure data.");
+        }
     }
 }

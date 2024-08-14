@@ -1,100 +1,165 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+﻿import React, { useState } from "react";
+import axios from 'axios';
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
     const [UserName, setUserName] = useState('');
-    const [passwordHash, setpasswordHash] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle login logic
-        console.log('Login:', { UserName, passwordHash });
-        // Here you can add your API call logic
+        setError(null);
+        setSuccess(null);
+
+        if (!UserName || !password) {
+            setError("Please fill in both fields.");
+            return;
+        }
+
+        try {
+            const response = await axios.post('/api/Users/Login', {
+                Username: UserName,
+                PasswordHash: password
+            });
+
+            localStorage.setItem('token', response.data.token);
+            setSuccess("Login successful!");
+            setUserName('');  
+            setPassword('');  
+            navigate('/HomePage');
+            setTimeout(() => navigate('/secure'), 1500); // Redirect after 1.5 seconds
+        } catch (err) {
+            setError(err.response?.data || 'Invalid UserName or password.');
+
+        }
     };
 
     return (
-        <Container>
-            <Form onSubmit={handleLogin}>
-                <Title>Login</Title>
-                <FormGroup>
-                    <label htmlFor="username">UserName:</label>
-                    <Input
-                        id="username"
-                        type="text"
+        <div style={styles.addUser}>
+            <h3 style={styles.heading}>Login</h3>
+            <form style={styles.addUserForm} onSubmit={handleSubmit}>
+                <div style={styles.inputGroup}>
+                    <label htmlFor="UserName">UserName:</label>
+                    <input
+                        type="UserName"
+                        id="UserName"
+                        name="UserName"
+                        autoComplete="off"
+                        placeholder="Enter your UserName"
                         value={UserName}
                         onChange={(e) => setUserName(e.target.value)}
-                        placeholder="Enter your username"
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <FormGroup>
                     <label htmlFor="password">Password:</label>
-                    <Input
-                        id="password"
+                    <input
                         type="password"
-                        value={passwordHash}
-                        onChange={(e) => setpasswordHash(e.target.value)}
-                        placeholder="Enter your password"
+                        id="password"
+                        name="password"
+                        autoComplete="off"
+                        placeholder="Enter your Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <Button type="submit">Login</Button>
-            </Form>
-        </Container>
+                    <button type="submit" style={styles.button}>Login</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                </div>
+            </form>
+            <div style={styles.login}>
+                <p>Don't have an Account? </p>
+                <Link to="/register" style={styles.link}>
+                    Sign Up
+                </Link>
+            </div>
+        </div>
     );
 };
 
-// Styled components
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f7f7f7;
-  padding: 0 15px;
-`;
+const styles = {
+    container: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh', 
+        backgroundColor: '#f4f4f4', 
+    },
+    formContainer: {
+        backgroundColor: 'white',
+        width: '100%',
+        padding: '40px',
+        borderRadius: '10px',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+    },
+    addUserForm: {
 
-const Form = styled.form`
-  background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-`;
+        borderRadius: '10px',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+        flexDirection: 'column',
+        
+    },
 
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 1.5rem; 
-`;
 
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
+    addUser: {
 
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-`;
 
-const Button = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
 
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
+        justifyContent: 'center',
+    },
+
+    login: {
+        width: '100%'
+    },
+    form: {
+        flexDirection: 'column',
+    },
+    inputGroup: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    input: {
+        marginTop: '10px',
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '5px',
+        width: '400px',
+    },
+    button: {
+        marginTop: '20px',
+        padding: '10px',
+        backgroundColor: '#007bff',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width: '420px',
+    },
+    footer: {
+        marginTop: '20px',
+        textAlign: 'center',
+    },
+    link: {
+        display: 'inline-block',
+        width: '420px',
+        padding: '10px  0px ',
+        textAlign: 'center',
+        backgroundColor: '#28a745',
+        color: 'white',
+        textDecoration: 'none',
+        borderRadius: '5px',
+    },
+    heading: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        color: 'darkcyan',
+        textTransform: 'uppercase',
+        textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
+    }
+};
 
 export default Login;

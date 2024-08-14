@@ -1,127 +1,176 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+﻿import React, { useState } from "react";
+import axios from 'axios'; 
+import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
-    const [UserName, setUserName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
-    const [passwordHash, setPasswordHash] = useState('');
+    const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const navigate = useNavigate();
 
-    const handleRegister = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (passwordHash !== confirmPassword) {
-            alert("Passwords don't match");
+        setError(null);
+        setSuccess(null);
+
+        // Validate fields
+        if (!username || !email || !password || !confirmPassword) {
+            setError("Please fill in all fields.");
             return;
         }
-        // Handle registration logic
-        console.log('Register:', { UserName, email, passwordHash });
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+
+        try {
+            await axios.post('/api/Users/Registration', {
+                UserName: username,
+                Email: email,
+                PasswordHash: password
+            });
+            setSuccess("Registration successful!");
+            setUsername('');  
+            setEmail('');  
+            setPassword('');  
+            setConfirmPassword('');  
+            setTimeout(() => navigate('/'), 1500); // Redirect after 1.5 seconds
+        } catch (err) {
+            setError(err.response?.data || 'An error occurred during registration.'); 
+        }
     };
 
     return (
-        <Container>
-            <Form onSubmit={handleRegister}>
-                <Title>Register</Title>
-                <FormGroup>
-                    <label htmlFor="username">UserName:</label>
-                    <Input
-                        id="username"
+        <div style={styles.addUser}>
+            <h3 style={styles.heading}>Register</h3>
+            <form style={styles.addUserForm} onSubmit={handleSubmit}>
+                <div style={styles.inputGroup}>
+                    <label htmlFor="username">Username:</label>
+                    <input
                         type="text"
-                        value={UserName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        placeholder="Enter your username"
+                        id="username"
+                        name="username"
+                        autoComplete="off"
+                        placeholder="Enter your Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <FormGroup>
                     <label htmlFor="email">Email:</label>
-                    <Input
-                        id="email"
+                    <input
                         type="email"
+                        id="email"
+                        name="email"
+                        autoComplete="off"
+                        placeholder="Enter your Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <FormGroup>
                     <label htmlFor="password">Password:</label>
-                    <Input
+                    <input
+                        type="password"
                         id="password"
-                        type="password"
-                        value={passwordHash}
-                        onChange={(e) => setPasswordHash(e.target.value)}
-                        placeholder="Enter your password"
+                        name="password"
+                        autoComplete="off"
+                        placeholder="Enter your Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <FormGroup>
-                    <label htmlFor="confirm-password">Confirm Password:</label>
-                    <Input
-                        id="confirm-password"
+                    <label htmlFor="confirmPassword">Confirm Password:</label>
+                    <input
                         type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        autoComplete="off"
+                        placeholder="Confirm your Password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm your password"
                         required
+                        style={styles.input}
                     />
-                </FormGroup>
-                <Button type="submit">Register</Button>
-            </Form>
-        </Container>
+                    <button type="submit" style={styles.button}>Register</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                </div>
+            </form>
+            <div style={styles.login}>
+                <p>Already have an Account? </p>
+                <Link to="/" style={styles.link}>
+                    Login
+                </Link>
+            </div>
+        </div>
     );
 };
 
-// Styled components
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f7f7f7;
-  padding: 0 15px;
-`;
-
-const Form = styled.form`
-  background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-`;
-
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 1.5rem;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
+const styles = {
+    container: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f0f0', 
+    },
+    formContainer: {
+        backgroundColor: 'white',
+        width: '400px',
+        padding: '40px',
+        borderRadius: '10px',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+    },
+    form: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    inputGroup: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    input: {
+        marginTop: '10px',
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '5px',
+    },
+    button: {
+        marginTop: '20px',
+        padding: '10px',
+        backgroundColor: '#007bff',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+    },
+    footer: {
+        marginTop: '20px',
+        textAlign: 'center',
+    },
+    link: {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'center',
+        padding: '10px 0px',
+        backgroundColor: '#28a745',
+        color: 'white',
+        textDecoration: 'none',
+        borderRadius: '5px',
+    },
+    heading: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        color: 'darkcyan',
+        textTransform: 'uppercase',
+        textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
+    }
+};
 
 export default Register;

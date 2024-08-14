@@ -4,7 +4,7 @@ namespace ReactApp1.Server.Models
 {
     public class Register
     {
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; }
 
         [Required]
