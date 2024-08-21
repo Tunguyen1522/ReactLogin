@@ -30,14 +30,13 @@ const Login = () => {
             setUserName('');  
             setPassword('');  
             navigate('/HomePage');
-            setTimeout(() => navigate('/secure'), 1500); // Redirect after 1.5 seconds
         } catch (err) {
             setError(err.response?.data || 'Invalid UserName or password.');
 
         }
     };
 
-    return (
+    return (<div style={styles.root}>
         <div style={styles.addUser}>
             <h3 style={styles.heading}>Login</h3>
             <form style={styles.addUserForm} onSubmit={handleSubmit}>
@@ -78,6 +77,8 @@ const Login = () => {
                 </Link>
             </div>
         </div>
+    </div>
+        
     );
 };
 
@@ -86,8 +87,7 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh', 
-        backgroundColor: '#f4f4f4', 
+        backgroundColor: '#f4f4f4',
     },
     formContainer: {
         backgroundColor: 'white',
@@ -98,19 +98,18 @@ const styles = {
     },
     addUserForm: {
 
-        borderRadius: '10px',
-        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+
         flexDirection: 'column',
-        
+
     },
-
-
-    addUser: {
-
-
-
+    root: {
         justifyContent: 'center',
+        display: 'flex',
+        fontWeight: '600',
+        borderRadius: '10px',
+
     },
+
 
     login: {
         width: '100%'
@@ -159,6 +158,7 @@ const styles = {
         color: 'darkcyan',
         textTransform: 'uppercase',
         textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
+        
     }
 };
 

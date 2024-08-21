@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReactApp1.Data;
 
@@ -11,9 +12,11 @@ using ReactApp1.Data;
 namespace ReactApp1.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240816084257_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +47,7 @@ namespace ReactApp1.Server.Migrations
 
                     b.HasIndex("CatId");
 
-                    b.ToTable("CartItems", (string)null);
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("ReactApp1.Server.Models.Cat", b =>
@@ -79,7 +82,7 @@ namespace ReactApp1.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cats", (string)null);
+                    b.ToTable("Cats");
                 });
 
             modelBuilder.Entity("ReactApp1.Server.Models.Order", b =>
@@ -102,7 +105,7 @@ namespace ReactApp1.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("ReactApp1.Server.Models.OrderItem", b =>
@@ -131,7 +134,7 @@ namespace ReactApp1.Server.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("ReactApp1.Server.Models.User", b =>
@@ -168,7 +171,7 @@ namespace ReactApp1.Server.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ReactApp1.Server.Models.CartItem", b =>

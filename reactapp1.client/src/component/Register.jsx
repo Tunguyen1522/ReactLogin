@@ -45,17 +45,18 @@ const Register = () => {
     };
 
     return (
+        <div style={styles.root}>
         <div style={styles.addUser}>
             <h3 style={styles.heading}>Register</h3>
             <form style={styles.addUserForm} onSubmit={handleSubmit}>
                 <div style={styles.inputGroup}>
-                    <label htmlFor="username">Username:</label>
+                    <label htmlFor="username">UserName:</label>
                     <input
                         type="text"
                         id="username"
                         name="username"
                         autoComplete="off"
-                        placeholder="Enter your Username"
+                        placeholder="Enter your UserName"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
@@ -102,13 +103,15 @@ const Register = () => {
                     {success && <p style={{ color: 'green' }}>{success}</p>}
                 </div>
             </form>
-            <div style={styles.login}>
+            <div style={styles.register}>
                 <p>Already have an Account? </p>
                 <Link to="/" style={styles.link}>
                     Login
                 </Link>
             </div>
         </div>
+    </div>
+        
     );
 };
 
@@ -140,6 +143,7 @@ const styles = {
         padding: '10px',
         border: '1px solid #ccc',
         borderRadius: '5px',
+        width: '400px',
     },
     button: {
         marginTop: '20px',
@@ -149,6 +153,12 @@ const styles = {
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
+        width: '100%',
+    },
+    root: {
+        justifyContent: 'center',
+        display: 'flex',
+        fontWeight: '600',
     },
     footer: {
         marginTop: '20px',
@@ -163,10 +173,11 @@ const styles = {
         color: 'white',
         textDecoration: 'none',
         borderRadius: '5px',
+
     },
     heading: {
-        textAlign: 'center',
         fontWeight: 'bold',
+        textAlign: 'center',
         color: 'darkcyan',
         textTransform: 'uppercase',
         textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
